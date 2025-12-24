@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VisRes Bench: On Evaluating the Visual Reasoning Capabilities of VLMs</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <h1 class="title">VisRes Bench: On Evaluating the Visual Reasoning Capabilities of VLMs</h1>
+            <p class="subtitle">A Hierarchical Benchmark for Diagnosing Visual Reasoning in Vision-Language Models</p>
+            
+            <div class="authors">
+                <div class="author-row">
+                    <span class="author">Brigitta Malagurski Törtei<sup>1*</sup></span>
+                    <span class="author">Yasser Dahou<sup>1*</sup></span>
+                    <span class="author">Ngoc Dung Huynh<sup>1*</sup></span>
+                </div>
+                <div class="author-row">
+                    <span class="author">Wamiq Reyaz Para<sup>1</sup></span>
+                    <span class="author">Phúc H. Lê Khac<sup>1</sup></span>
+                    <span class="author">Ankit Singh<sup>1</sup></span>
+                    <span class="author">Sofian Chaybouti<sup>1,2</sup></span>
+                    <span class="author">Sanath Narayan<sup>1</sup></span>
+                </div>
+            </div>
+            
+            <div class="affiliations">
+                <p><sup>1</sup>Technology Innovation Institute, Abu Dhabi, UAE</p>
+                <p><sup>2</sup>Tuebingen AI Center/University of Tuebingen</p>
+                <p class="equal-contrib"><sup>*</sup>Equal contribution</p>
+            </div>
+            
+            <div class="links">
+                <a href="#" class="btn btn-primary">Paper (arXiv)</a>
+                <a href="#" class="btn btn-secondary disabled">Dataset Coming Soon</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Abstract -->
+    <section class="section abstract-section">
+        <div class="container">
+            <h2>Abstract</h2>
+            <p class="abstract-text">
+                Vision-Language Models (VLMs) have achieved remarkable progress across tasks such as visual question answering and image captioning. 
+                Yet, the extent to which these models perform visual reasoning as opposed to relying on linguistic priors remains unclear. 
+                To address this, we introduce <strong>VisRes Bench</strong>, a benchmark designed to study visual reasoning in naturalistic settings 
+                without contextual language supervision. Analyzing model behavior across three levels of complexity, we uncover clear limitations 
+                in perceptual and relational visual reasoning capacities.
+            </p>
+            
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-number">19,000+</div>
+                    <div class="stat-label">Evaluation Samples</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">3</div>
+                    <div class="stat-label">Complexity Levels</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">13+</div>
+                    <div class="stat-label">Models Evaluated</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">25</div>
+                    <div class="stat-label">Subtasks</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Figure -->
+    <section class="section main-figure-section">
+        <div class="container">
+            <h2>Overview</h2>
+            <div class="figure-container">
+                <img src="images/main_fig.png" alt="VisRes Benchmark Overview" class="main-figure">
+                <p class="caption">
+                    <strong>Real samples from each level.</strong> Level 1 (top) involves direct visual completion and matching without 
+                    explicit rule inference, while Levels 2 and 3 (bottom) require increasingly complex rule-based reasoning over perceptual 
+                    attributes. Current VLMs show poor performance on these compositional tasks.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benchmark Structure -->
+    <section class="section benchmark-section">
+        <div class="container">
+            <h2>VisRes Benchmark Structure</h2>
+            <p class="section-intro">
+                VisRes spans a progression from perceptual grounding to structured visual reasoning in real-world imagery, 
+                operationalizing increasing reasoning demands across three hierarchical levels.
+            </p>
+            
+            <!-- Level 1 -->
+            <div class="level-card">
+                <div class="level-header">
+                    <h3>Level 1: Perceptual Completion</h3>
+                    <span class="sample-count">~10,500 samples</span>
+                </div>
+                <div class="level-content">
+                    <div class="level-description">
+                        <h4>Local Patch Completion</h4>
+                        <p>
+                            Match a masked tile to one of four candidates under controlled perturbations: blur, brightness, 
+                            rotation, edges, and orientation. Assesses robustness of low-level visual representations.
+                        </p>
+                        <h4>Global Occlusion</h4>
+                        <p>
+                            Infer scene structure when 50–80% of the image is occluded. Requires reasoning about broader 
+                            structure and context to recover missing content.
+                        </p>
+                        <ul class="task-list">
+                            <li>Edges detection</li>
+                            <li>Location matching</li>
+                            <li>Rotation invariance</li>
+                            <li>Brightness robustness</li>
+                            <li>Blur resilience</li>
+                            <li>Global occlusion (50% & 80%)</li>
+                        </ul>
+                    </div>
+                    <div class="level-visual">
+                        <img src="images/L1_tasks_local.png" alt="Level 1 Tasks" class="level-image">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Level 2 -->
+            <div class="level-card">
+                <div class="level-header">
+                    <h3>Level 2: Single-Attribute Rule Reasoning</h3>
+                    <span class="sample-count">~5,956 samples across 12 subtasks</span>
+                </div>
+                <div class="level-content">
+                    <div class="level-description">
+                        <p>
+                            Raven-style 3×3 grids where the missing cell is determined by a row-wise rule applied to one attribute—color, 
+                            count, or orientation—while others vary freely.
+                        </p>
+                        <h4>Task Types:</h4>
+                        <ul class="task-list">
+                            <li><strong>Uniform Patterns:</strong> All cells within each row share the same attribute value</li>
+                            <li><strong>Distribution Patterns:</strong> 3-different or 2-similar-1-different arrangements</li>
+                            <li><strong>Progression Patterns:</strong> Monotonic or cyclic variation (e.g., 1→2→3)</li>
+                            <li><strong>Quantitative Operations:</strong> Arithmetic relations (min-max, addition, subtraction)</li>
+                        </ul>
+                    </div>
+                    <div class="level-visual">
+                        <img src="images/explainer_fig.png" alt="Level 2 Patterns" class="level-image">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Level 3 -->
+            <div class="level-card">
+                <div class="level-header">
+                    <h3>Level 3: Multi-Attribute Compositional Reasoning</h3>
+                    <span class="sample-count">~2,522 samples across 6 subtasks</span>
+                </div>
+                <div class="level-content">
+                    <div class="level-description">
+                        <p>
+                            Requires integrating multiple jointly varying attributes: color, count, object identity, and orientation. 
+                            Reflects the highest level of relational and compositional difficulty.
+                        </p>
+                        <h4>Task Categories:</h4>
+                        <ul class="task-list">
+                            <li><strong>Coupled Rules:</strong> Attributes are deterministically linked (e.g., specific count always paired with specific color)</li>
+                            <li><strong>Independent Multi-Rules:</strong> Simultaneous reasoning across unlinked dimensions</li>
+                            <li><strong>Spatial-Compositional:</strong> Transformations along continuous paths (spiral patterns)</li>
+                        </ul>
+                    </div>
+                    <div class="level-visual">
+                        <img src="images/L3_ind.png" alt="Level 3 Tasks" class="level-image">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Results -->
+    <section class="section results-section">
+        <div class="container">
+            <h2>Key Results</h2>
+            <p class="section-intro">
+                State-of-the-art VLMs perform near random baseline (25%) on most VisRes tasks, exposing fundamental 
+                limitations in visual reasoning when linguistic guidance is removed.
+            </p>
+            
+            <div class="results-grid">
+                <div class="result-card">
+                    <h3>Level 1: Perceptual Completion</h3>
+                    <div class="performance-bar">
+                        <div class="bar">
+                            <div class="bar-fill" style="width: 33.28%;"></div>
+                            <span class="bar-label">Best Model: 33.3% (Gemini-2.5)</span>
+                        </div>
+                        <div class="bar">
+                            <div class="bar-fill human" style="width: 90.4%;"></div>
+                            <span class="bar-label">Human Baseline: 90.4%</span>
+                        </div>
+                    </div>
+                    <p class="result-note">Models struggle with basic visual completion under perturbations like blur, rotation, and occlusion.</p>
+                </div>
+                
+                <div class="result-card">
+                    <h3>Level 2: Single-Attribute Reasoning</h3>
+                    <div class="performance-bar">
+                        <div class="bar">
+                            <div class="bar-fill" style="width: 62.29%;"></div>
+                            <span class="bar-label">Best Model: 62.3% (Gemini-2.5)</span>
+                        </div>
+                    </div>
+                    <p class="result-note">
+                        <strong>Color reasoning:</strong> 96-97% accuracy<br>
+                        <strong>Count reasoning:</strong> 77-90% accuracy<br>
+                        <strong>Orientation reasoning:</strong> 19-30% accuracy (near random!)
+                    </p>
+                </div>
+                
+                <div class="result-card">
+                    <h3>Level 3: Multi-Attribute Composition</h3>
+                    <div class="performance-bar">
+                        <div class="bar">
+                            <div class="bar-fill" style="width: 34.39%;"></div>
+                            <span class="bar-label">Best Model: 34.4% (GPT-5)</span>
+                        </div>
+                    </div>
+                    <p class="result-note">Multi-attribute integration dramatically reduces performance, revealing compositional reasoning deficits.</p>
+                </div>
+            </div>
+            
+            <div class="results-table-container">
+                <h3>Model Performance Comparison (Guided Prompting)</h3>
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Model</th>
+                            <th>Level 1</th>
+                            <th>Level 2</th>
+                            <th>Level 3</th>
+                            <th>Overall</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="highlight-row">
+                            <td>GPT-5</td>
+                            <td>31.10</td>
+                            <td>49.79</td>
+                            <td><strong>34.39</strong></td>
+                            <td>40.35</td>
+                        </tr>
+                        <tr>
+                            <td>GPT-4o</td>
+                            <td>23.86</td>
+                            <td>24.12</td>
+                            <td>23.86</td>
+                            <td>24.47</td>
+                        </tr>
+                        <tr class="highlight-row">
+                            <td>Gemini-2.5</td>
+                            <td><strong>33.28</strong></td>
+                            <td><strong>62.29</strong></td>
+                            <td>33.73</td>
+                            <td><strong>46.84</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Qwen3-VL-4B</td>
+                            <td>28.17</td>
+                            <td>37.18</td>
+                            <td>26.31</td>
+                            <td>31.98</td>
+                        </tr>
+                        <tr>
+                            <td>Qwen3-VL-8B</td>
+                            <td>29.06</td>
+                            <td>41.73</td>
+                            <td>27.46</td>
+                            <td>34.16</td>
+                        </tr>
+                        <tr>
+                            <td>Qwen3-VL-30B</td>
+                            <td>31.20</td>
+                            <td>46.75</td>
+                            <td>31.36</td>
+                            <td>37.78</td>
+                        </tr>
+                        <tr>
+                            <td>Qwen3-VL-32B</td>
+                            <td>30.56</td>
+                            <td>47.29</td>
+                            <td>30.64</td>
+                            <td>37.78</td>
+                        </tr>
+                        <tr>
+                            <td>InternVL3.5-4B</td>
+                            <td>25.16</td>
+                            <td>25.49</td>
+                            <td>24.90</td>
+                            <td>25.49</td>
+                        </tr>
+                        <tr>
+                            <td>InternVL3.5-8B</td>
+                            <td>25.49</td>
+                            <td>25.65</td>
+                            <td>26.88</td>
+                            <td>25.93</td>
+                        </tr>
+                        <tr>
+                            <td>MiMo-VL-7B-RL</td>
+                            <td>29.22</td>
+                            <td>39.15</td>
+                            <td>25.17</td>
+                            <td>33.21</td>
+                        </tr>
+                        <tr>
+                            <td>GLM-4.1V-9B</td>
+                            <td>26.26</td>
+                            <td>38.19</td>
+                            <td>22.67</td>
+                            <td>29.73</td>
+                        </tr>
+                        <tr>
+                            <td>Kimi-VL-A3B</td>
+                            <td>26.36</td>
+                            <td>33.65</td>
+                            <td>25.82</td>
+                            <td>28.56</td>
+                        </tr>
+                        <tr class="baseline-row">
+                            <td><strong>Random Baseline</strong></td>
+                            <td>25.00</td>
+                            <td>25.00</td>
+                            <td>25.00</td>
+                            <td>25.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Findings -->
+    <section class="section findings-section">
+        <div class="container">
+            <h2>Key Findings & Analysis</h2>
+            
+            <div class="findings-grid">
+                <div class="finding-card">
+                    <h3>🔍 Resolution Matters</h3>
+                    <p>
+                        Increasing input resolution from 512×512 to 2048×2048 improves performance by 11+ points on Level 1 
+                        perceptual tasks, but models still underperform dramatically. Higher resolution helps but is not sufficient.
+                    </p>
+                    <div class="finding-data">
+                        <div class="data-point">
+                            <span class="data-value">512²</span>
+                            <span class="data-desc">45.2% accuracy</span>
+                        </div>
+                        <div class="data-point">
+                            <span class="data-value">2048²</span>
+                            <span class="data-desc">56.5% accuracy</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="finding-card">
+                    <h3>👁️ Perceptual Grounding Deficits</h3>
+                    <p>
+                        Models show attribute-specific limitations when extracting single visual features:
+                    </p>
+                    <ul class="finding-list">
+                        <li><strong>Color recognition:</strong> 84.6% (Good)</li>
+                        <li><strong>Count recognition:</strong> 72.4% (Moderate)</li>
+                        <li><strong>Orientation recognition:</strong> 39.8% (Poor - barely above random!)</li>
+                    </ul>
+                    <p class="finding-note">
+                        Geometric and spatial features are particularly difficult to extract reliably.
+                    </p>
+                </div>
+                
+                <div class="finding-card">
+                    <h3>📝 The Modality Gap</h3>
+                    <p>
+                        When the same tasks are presented as <strong>text descriptions</strong> instead of images, 
+                        performance dramatically improves:
+                    </p>
+                    <div class="finding-data">
+                        <div class="data-comparison">
+                            <div class="comparison-item">
+                                <span class="comparison-label">Level 2 (Visual)</span>
+                                <span class="comparison-value">50.0%</span>
+                            </div>
+                            <div class="comparison-arrow">→</div>
+                            <div class="comparison-item">
+                                <span class="comparison-label">Level 2 (Text)</span>
+                                <span class="comparison-value">85.0%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="finding-note">
+                        <strong>Key Insight:</strong> Failures arise from visual-to-symbolic translation, not logical inference capacity.
+                    </p>
+                </div>
+                
+                <div class="finding-card">
+                    <h3>🧠 Thinking Mode Helps</h3>
+                    <p>
+                        Explicit reasoning steps (thinking mode) consistently improve performance, especially for open-source models. 
+                        The largest improvements occur on Level 2 single-attribute reasoning tasks.
+                    </p>
+                    <p class="finding-note">
+                        Without thinking mode, many open-source models perform at random chance (~25%).
+                    </p>
+                </div>
+                
+                <div class="finding-card">
+                    <h3>📚 Fine-tuning Shows Promise</h3>
+                    <p>
+                        Supervised fine-tuning on Level 1 tasks improves performance from 24.5% to 43.7%, 
+                        but remains far below human baseline (90.4%).
+                    </p>
+                    <p class="finding-note">
+                        Geometric cues (rotation) are most learnable; pixel-based perturbations (blur, brightness) are harder to acquire.
+                    </p>
+                </div>
+                
+                <div class="finding-card">
+                    <h3>🎯 Attribute-Specific Patterns</h3>
+                    <p>
+                        Performance varies dramatically by visual attribute:
+                    </p>
+                    <ul class="finding-list">
+                        <li><strong>Color tasks:</strong> Models excel (96-97% on uniform patterns)</li>
+                        <li><strong>Count tasks:</strong> Moderate success (60-90% depending on complexity)</li>
+                        <li><strong>Orientation tasks:</strong> Consistent failure (19-30% across all models)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Example Tasks -->
+    <section class="section examples-section">
+        <div class="container">
+            <h2>Example Tasks</h2>
+            <p class="section-intro">Explore sample tasks from each level of the benchmark.</p>
+            
+            <div class="carousel-container">
+                <div class="carousel-wrapper">
+                    <div class="carousel-slide" id="slide1">
+                        <div class="example-card-large">
+                            <h3>Level 1: Location (DS)</h3>
+                            <img src="images/L1_location_ds.png" alt="Level 1 Example" class="example-image-large">
+                            <p class="example-caption-large">DINOv2-based similarity distractors make patch matching perceptually challenging.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="carousel-slide" id="slide2">
+                        <div class="example-card-large">
+                            <h3>Level 1: Global Occlusion 80%</h3>
+                            <img src="images/L1_global_80.png" alt="Global Occlusion Example" class="example-image-large">
+                            <p class="example-caption-large">Infer scene structure with 80% of the image masked.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="carousel-slide" id="slide3">
+                        <div class="example-card-large">
+                            <h3>Level 2: Uniform Orientation</h3>
+                            <img src="images/L2_orient_uniform.png" alt="Level 2 Orientation Example" class="example-image-large">
+                            <p class="example-caption-large">Each row maintains uniform orientation - models struggle with this task (19-30% accuracy).</p>
+                        </div>
+                    </div>
+                    
+                    <div class="carousel-slide" id="slide4">
+                        <div class="example-card-large">
+                            <h3>Level 2: Count Arithmetic</h3>
+                            <img src="images/L2_count_arit.png" alt="Level 2 Count Example" class="example-image-large">
+                            <p class="example-caption-large">Third cell contains sum or difference of the first two cells' object counts.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="carousel-slide" id="slide5">
+                        <div class="example-card-large">
+                            <h3>Level 2: 3-Different Color</h3>
+                            <img src="images/L2_color_3diff.png" alt="Level 2 Color Example" class="example-image-large">
+                            <p class="example-caption-large">Each row contains three distinct colors - models perform well on color tasks (88-97%).</p>
+                        </div>
+                    </div>
+                    
+                    <div class="carousel-slide" id="slide6">
+                        <div class="example-card-large">
+                            <h3>Level 3: Coupled Color-Count</h3>
+                            <img src="images/L3_coupled.png" alt="Level 3 Coupled Example" class="example-image-large">
+                            <p class="example-caption-large">Attributes are deterministically linked across the grid.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="carousel-slide" id="slide7">
+                        <div class="example-card-large">
+                            <h3>Level 3: Independent Multi-Attribute</h3>
+                            <img src="images/L3_ind.png" alt="Level 3 Independent Example" class="example-image-large">
+                            <p class="example-caption-large">Multiple attributes vary independently following separate rules.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="carousel-slide" id="slide8">
+                        <div class="example-card-large">
+                            <h3>Level 3: Spiral Pattern</h3>
+                            <img src="images/L3_spiral_orient.png" alt="Level 3 Spiral Example" class="example-image-large">
+                            <p class="example-caption-large">Attributes change along a spiral path through the grid.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Navigation -->
+                <div class="carousel-nav">
+                    <a href="#slide1" class="carousel-arrow carousel-prev" id="prevBtn">‹</a>
+                    <div class="carousel-indicators">
+                        <a href="#slide1" class="indicator"></a>
+                        <a href="#slide2" class="indicator"></a>
+                        <a href="#slide3" class="indicator"></a>
+                        <a href="#slide4" class="indicator"></a>
+                        <a href="#slide5" class="indicator"></a>
+                        <a href="#slide6" class="indicator"></a>
+                        <a href="#slide7" class="indicator"></a>
+                        <a href="#slide8" class="indicator"></a>
+                    </div>
+                    <a href="#slide2" class="carousel-arrow carousel-next" id="nextBtn">›</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Conclusion -->
+    <section class="section conclusion-section">
+        <div class="container">
+            <h2>Conclusion</h2>
+            <div class="conclusion-content">
+                <p>
+                    VisRes reveals that current state-of-the-art VLMs possess strong reasoning capabilities when operating 
+                    on symbolic text descriptions, yet fail to apply these same capabilities when reasoning must be extracted 
+                    from visual input. The primary bottleneck is <strong>visual-to-symbolic translation</strong>, not logical inference.
+                </p>
+                <p>
+                    This modality gap persists across resolutions and task types, with attribute-specific deficits particularly 
+                    evident for geometric and spatial features (orientation). Our benchmark provides a systematic framework for 
+                    diagnosing where visual processing breaks down, enabling principled development of architectures that integrate 
+                    perception and abstraction more effectively.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Citation -->
+    <section class="section citation-section" id="bibtex">
+        <div class="container">
+            <h2>Citation</h2>
+            <p>If you find VisRes useful in your research, please consider citing:</p>
+            <div class="bibtex-box">
+                <pre><code>@article{visres2024,
+  title={VisRes Bench: On Evaluating the Visual Reasoning Capabilities of VLMs},
+  author={Malagurski T{\"o}rtei, Brigitta and Dahou, Yasser and Huynh, Ngoc Dung and 
+          Para, Wamiq Reyaz and L{\^e} Khac, Ph{\'u}c H. and Singh, Ankit and 
+          Chaybouti, Sofian and Narayan, Sanath},
+  journal={arXiv preprint},
+  year={2024}
+}</code></pre>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Technology Innovation Institute. All rights reserved.</p>
+            <p>Contact: <a href="mailto:yasser.dahou@tii.ae">yasser.dahou@tii.ae</a></p>
+        </div>
+    </footer>
+
+    <script>
+        // Carousel navigation
+        document.addEventListener('DOMContentLoaded', function() {
+            const slides = document.querySelectorAll('.carousel-slide');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            let currentSlide = 0;
+            
+            function updateCarousel() {
+                slides[currentSlide].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                updateArrows();
+            }
+            
+            function updateArrows() {
+                prevBtn.href = '#slide' + (currentSlide === 0 ? slides.length : currentSlide);
+                nextBtn.href = '#slide' + (currentSlide + 2 > slides.length ? 1 : currentSlide + 2);
+            }
+            
+            prevBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                currentSlide = currentSlide === 0 ? slides.length - 1 : currentSlide - 1;
+                updateCarousel();
+            });
+            
+            nextBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                currentSlide = currentSlide === slides.length - 1 ? 0 : currentSlide + 1;
+                updateCarousel();
+            });
+            
+            // Update current slide when clicking indicators
+            document.querySelectorAll('.indicator').forEach((indicator, index) => {
+                indicator.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    currentSlide = index;
+                    updateCarousel();
+                });
+            });
+            
+            // Keyboard navigation
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowLeft') {
+                    currentSlide = currentSlide === 0 ? slides.length - 1 : currentSlide - 1;
+                    updateCarousel();
+                } else if (e.key === 'ArrowRight') {
+                    currentSlide = currentSlide === slides.length - 1 ? 0 : currentSlide + 1;
+                    updateCarousel();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
